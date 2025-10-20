@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String        @map("password_hash")
+  name         String
+  currency     String        @default("TRY") @db.Char(3)
+  locale       String?
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  budgets      Budget[]
+  categories   Category[]
+  transactions Transaction[]
+}
+
+model Category {
+  id           String              @id @default(uuid())
+  userId       String              @map("user_id")
+  name         String
+  type         CategoryType
+  color        String?
+  icon         String?
+  budgetPerCat BudgetPerCategory[]
+  user         User                @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@unique([userId, name])
+}
+
+model Transaction {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  categoryId  String    @map("category_id")
+  amountCents Int       @map("amount_cents")
+  occurredOn  DateTime  @map("occurred_on") @db.Date
+  note        String?
+  tags        String[]  @default([])
+  location    Json?
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+  category    Category  @relation(fields: [categoryId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model Budget {
+  id              String              @id @default(uuid())
+  userId          String              @map("user_id")
+  month           DateTime            @db.Date
+  totalLimitCents Int                 @map("total_limit_cents")
+  user            User                @relation(fields: [userId], references: [id])
+  perCategory     BudgetPerCategory[]
+
+  @@unique([userId, month])
+}
+
+model BudgetPerCategory {
+  id         String   @id @default(uuid())
+  budgetId   String   @map("budget_id")
+  categoryId String   @map("category_id")
+  limitCents Int      @map("limit_cents")
+  budget     Budget   @relation(fields: [budgetId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([budgetId, categoryId])
+}
+
+enum CategoryType {
+  expense
+  income
+}
