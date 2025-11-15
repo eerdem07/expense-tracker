@@ -1,9 +1,16 @@
 import express from "express";
 const Router = express.Router();
+import { validate } from "../../middlewares/validate";
+import { registerDto, loginDto } from "./auth.dto";
 
-import { loginController, signUpController } from "./auth.controller";
+import {
+  loginController,
+  registerController,
+  refreshTokenController,
+} from "./auth.controller";
 
-Router.post("/login", loginController);
-Router.post("/signup", signUpController);
+Router.post("/register", validate(registerDto), registerController);
+Router.post("/login", validate(loginDto), loginController);
+Router.post("/refreshToken", refreshTokenController);
 
 export default Router;
