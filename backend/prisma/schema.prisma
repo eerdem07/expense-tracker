@@ -1,77 +1,93 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  passwordHash String        @map("password_hash")
-  name         String
-  currency     String        @default("TRY") @db.Char(3)
-  locale       String?
-  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
-  budgets      Budget[]
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  locale       String       @default("tr-TR")
+  timezone     String       @default("Europe/Istanbul")
+  baseCurrency String       @default("TRY")
+  createdAt    DateTime     @default(now())
+
+  wallets      Wallet[]
   categories   Category[]
   transactions Transaction[]
 }
 
+model Wallet {
+  id             String        @id @default(cuid())
+  userId         String
+  name           String
+  type           WalletType
+  currency       String
+  openingBalance Decimal       @default(0)
+  archived       Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+
+  user           User          @relation(fields: [userId], references: [id])
+  transactions   Transaction[]
+
+  @@unique([userId, name])    // aynı isimli cüzdanı engelle
+}
+
+enum WalletType {
+  cash
+  bank
+  credit
+}
+
 model Category {
-  id           String              @id @default(uuid())
-  userId       String              @map("user_id")
-  name         String
-  type         CategoryType
-  color        String?
-  icon         String?
-  budgetPerCat BudgetPerCategory[]
-  user         User                @relation(fields: [userId], references: [id])
+  id        String        @id @default(cuid())
+  userId    String
+  name      String
+  type      CategoryType
+  parentId  String?
+
+  user      User          @relation(fields: [userId], references: [id])
+  parent    Category?     @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children  Category[]    @relation("CategoryToCategory")
   transactions Transaction[]
 
-  @@unique([userId, name])
-}
-
-model Transaction {
-  id          String    @id @default(uuid())
-  userId      String    @map("user_id")
-  categoryId  String    @map("category_id")
-  amountCents Int       @map("amount_cents")
-  occurredOn  DateTime  @map("occurred_on") @db.Date
-  note        String?
-  tags        String[]  @default([])
-  location    Json?
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
-  category    Category  @relation(fields: [categoryId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
-}
-
-model Budget {
-  id              String              @id @default(uuid())
-  userId          String              @map("user_id")
-  month           DateTime            @db.Date
-  totalLimitCents Int                 @map("total_limit_cents")
-  user            User                @relation(fields: [userId], references: [id])
-  perCategory     BudgetPerCategory[]
-
-  @@unique([userId, month])
-}
-
-model BudgetPerCategory {
-  id         String   @id @default(uuid())
-  budgetId   String   @map("budget_id")
-  categoryId String   @map("category_id")
-  limitCents Int      @map("limit_cents")
-  budget     Budget   @relation(fields: [budgetId], references: [id])
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  @@unique([budgetId, categoryId])
+  @@unique([userId, name, type]) // aynı tipte aynı isimli kategori olmasın
 }
 
 enum CategoryType {
-  expense
   income
+  expense
+}
+
+model Transaction {
+  id         String           @id @default(cuid())
+  userId     String
+  walletId   String
+  type       TransactionType
+  amount     Decimal
+  currency   String
+  bookedAt   DateTime
+  categoryId String?
+  note       String?
+  attachments String[]        @default([])
+  tags        String[]        @default([])
+
+  user       User             @relation(fields: [userId], references: [id])
+  wallet     Wallet           @relation(fields: [walletId], references: [id])
+  category   Category?        @relation(fields: [categoryId], references: [id])
+
+  @@index([userId, bookedAt])
+  @@index([userId, type])
+  @@index([userId, walletId])
+  @@index([userId, categoryId])
+}
+
+enum TransactionType {
+  income
+  expense
+  transfer
 }
