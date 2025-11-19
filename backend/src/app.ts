@@ -14,7 +14,7 @@ const app: Application = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/", (_req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ message: "API is running!" });
 });
 
