@@ -6,11 +6,6 @@ import {
   verifyRefreshToken,
 } from "../../utils/token";
 import { create, findUserByEmail } from "./auth.repository";
-import {
-  JsonWebTokenError,
-  NotBeforeError,
-  TokenExpiredError,
-} from "jsonwebtoken";
 
 export async function registerController(
   req: Request,
@@ -133,28 +128,6 @@ export async function refreshTokenController(
       },
     });
   } catch (err) {
-    // TODO: refresh token geçerli değilse hata gönder.
-    if (err instanceof TokenExpiredError) {
-      return res.status(401).json({
-        status: false,
-        message: "REFRESH_TOKEN_EXPIRED",
-      });
-    }
-
-    if (err instanceof NotBeforeError) {
-      return res.status(401).json({
-        status: false,
-        message: "REFRESH_TOKEN_NOT_ACTIVE",
-      });
-    }
-
-    if (err instanceof JsonWebTokenError) {
-      return res.status(401).json({
-        status: false,
-        message: "REFRESH_TOKEN_INVALID",
-      });
-    }
-
     return res.status(500).json({
       status: false,
       message: "Failed to validate refresh token.",
