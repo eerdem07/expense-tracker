@@ -4,7 +4,7 @@ import { AppError } from "../utils/AppError";
 
 export default function protectRoute(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
   try {
