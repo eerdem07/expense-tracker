@@ -1,9 +1,8 @@
-import { prisma } from '../../db/prisma';
-import { AppError } from '../../utils/AppError';
+import { prisma } from "../../db/prisma";
 
 export function create(data: {
   name: string;
-  type: 'cash' | 'bank' | 'credit';
+  type: "cash" | "bank" | "credit";
   currency: string;
   openingBalance: number;
   userId: string;
@@ -19,7 +18,7 @@ export function create(data: {
   });
 }
 
-export function getWallets(userId: string) {
+export function findWallets(userId: string) {
   return prisma.wallet.findMany({
     where: {
       userId: userId,
@@ -27,10 +26,10 @@ export function getWallets(userId: string) {
   });
 }
 
-export function getWallet(id: string) {
+export function findWallet(id: string) {
   return prisma.wallet.findUnique({
     where: {
-      id: id,
+      id,
     },
   });
 }
@@ -39,7 +38,7 @@ export function update(
   id: string,
   data: {
     name: string;
-    type: 'cash' | 'bank' | 'credit';
+    type: "cash" | "bank" | "credit";
     currency: string;
     openingBalance: number;
     userId: string;

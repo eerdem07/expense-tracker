@@ -6,6 +6,7 @@ import {
   verifyRefreshToken,
 } from "../../utils/token";
 import { create, findUserByEmail } from "./auth.repository";
+import { AppError } from "../../utils/AppError";
 
 export async function registerController(
   req: Request,
@@ -128,9 +129,6 @@ export async function refreshTokenController(
       },
     });
   } catch (err) {
-    return res.status(500).json({
-      status: false,
-      message: "Failed to validate refresh token.",
-    });
+    throw new AppError("Failed to validate refresh token", 500);
   }
 }
