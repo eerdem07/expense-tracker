@@ -30,7 +30,7 @@ export async function createWallet(
     });
   } catch (err: any) {
     if (err.code === "P2002") {
-      return next(new AppError("Bu isimde bir cüzdan var.", 409));
+      return next(new AppError("WALLET NAME EXISTS", 409));
     }
     next(err);
   }

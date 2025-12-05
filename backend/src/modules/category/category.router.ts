@@ -1,15 +1,16 @@
 import express from "express";
+import { validate } from "../../middlewares/validate";
 const Router = express.Router();
 
 import {
+  createCategory,
   getCategories,
-  addCategory,
   getCategoryById,
   updateCategory,
   archiveCategory,
 } from "./category.controller";
 
-Router.route("/").get(getCategories).post(addCategory);
+Router.route("/").get(getCategories).post(validate, createCategory);
 Router.route("/:id")
   .get(getCategoryById)
   .patch(updateCategory)
