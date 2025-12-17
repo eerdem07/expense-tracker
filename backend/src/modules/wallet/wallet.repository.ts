@@ -1,19 +1,14 @@
-import { prisma } from "../../db/prisma";
+import { prisma } from '../../db/prisma';
+import { addWalletDtoType } from './wallet.dto';
 
-export function create(data: {
-  name: string;
-  type: "cash" | "bank" | "credit";
-  currency: string;
-  openingBalance: number;
-  userId: string;
-}) {
+export function create(userId: string, data: addWalletDtoType) {
   return prisma.wallet.create({
     data: {
       name: data.name,
       currency: data.currency,
       type: data.type,
       openingBalance: data.openingBalance,
-      userId: data.userId,
+      userId: userId,
     },
   });
 }
@@ -35,25 +30,20 @@ export function findWallet(id: string) {
 }
 
 export function update(
-  id: string,
-  data: {
-    name: string;
-    type: "cash" | "bank" | "credit";
-    currency: string;
-    openingBalance: number;
-    userId: string;
-  }
+  walletId: string,
+  userId: string,
+  data: addWalletDtoType
 ) {
   return prisma.wallet.update({
     where: {
-      id: id,
+      id: walletId,
     },
     data: {
       name: data.name,
       currency: data.currency,
       type: data.type,
       openingBalance: data.openingBalance,
-      userId: data.userId,
+      userId: userId,
     },
   });
 }

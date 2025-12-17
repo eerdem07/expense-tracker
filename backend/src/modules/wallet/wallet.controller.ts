@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { findWallet, findWallets, create } from "./wallet.repository";
-import { AppError } from "../../utils/AppError";
+import { Request, Response, NextFunction } from 'express';
+import { findWallet, findWallets, create } from './wallet.repository';
+import { AppError } from '../../utils/AppError';
 
 export async function createWallet(
   req: Request,
@@ -8,9 +8,10 @@ export async function createWallet(
   next: NextFunction
 ) {
   try {
-    if (!req.user || !req.user.id) {
-      throw new AppError("userId is missing!", 401);
+    if (!req.user || typeof req.user?.id !== 'string') {
+      throw new AppError('userId is missing!', 401);
     }
+
     const userId = req.user.id;
 
     const walletObj = {
@@ -21,16 +22,16 @@ export async function createWallet(
       userId: userId,
     };
 
-    const newWallet = await create(walletObj);
+    const newWallet = await create(userId, walletObj);
 
     res.status(201).json({
       status: true,
-      message: "",
+      message: '',
       data: { newWallet },
     });
   } catch (err: any) {
-    if (err.code === "P2002") {
-      return next(new AppError("WALLET NAME EXISTS", 409));
+    if (err.code === 'P2002') {
+      return next(new AppError('WALLET NAME EXISTS', 409));
     }
     next(err);
   }
@@ -45,7 +46,7 @@ export async function getUserWallets(
     const userId = req.user?.id;
 
     if (!userId) {
-      throw new AppError("UserId isnt valid", 400);
+      throw new AppError('UserId isnt valid', 400);
     }
 
     const wallets = await findWallet(userId);
@@ -67,17 +68,17 @@ export async function getUniqueWallet(
   next: NextFunction
 ) {
   try {
-    const id = req.params["id"];
+    const id = req.params['id'];
 
     if (!id) {
-      throw new AppError("ID parametresi zorunlu", 400);
+      throw new AppError('ID parametresi zorunlu', 400);
     }
 
     const wallet = await findWallet(id);
 
     res.status(200).json({
       status: true,
-      message: "WALLET_FOUND",
+      message: 'WALLET_FOUND',
       data: {
         wallet,
       },
